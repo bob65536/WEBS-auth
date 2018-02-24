@@ -1,0 +1,22 @@
+<% include partials/navbar.ejs %> <!-- For the toolbar -->
+<form action="/login" method="post">
+	<div>
+	<label>Username:</label>
+	<input type="text" name="username"/><br/>
+	</div>
+	<div>
+	<label>Password:</label>
+	<input type="password" name="password"/>
+	</div>
+	<div>
+	<input type="submit" value="Submit"/>
+	</div>
+</form>
+<br />
+<hr />
+<p>Here, there are three different logins, as depicted in the file db/users.js <br />
+<ul>
+	<li>jack (secret)</li>
+	<li>jick (birthday)</li>
+	<li>And an admin</li>
+</ul>

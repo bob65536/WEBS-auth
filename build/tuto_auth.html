@@ -1,0 +1,310 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+        <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>L’authentification sur un site Oueb &#8212; DocAuth 0.1 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="1-Projet.js" href="1-Projet.html" />
+    <link rel="prev" title="Welcome to DocAuth’s documentation!" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="lauthentification-sur-un-site-oueb">
+<h1>L’authentification sur un site Oueb<a class="headerlink" href="#lauthentification-sur-un-site-oueb" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="explications-prealables">
+<h2>Explications préalables<a class="headerlink" href="#explications-prealables" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="pourquoi-faire-ca">
+<h3>Pourquoi faire ça?<a class="headerlink" href="#pourquoi-faire-ca" title="Permalink to this headline">¶</a></h3>
+<p>Authentication à base de “jetons” (tokens) :</p>
+<p>Pour sécuriser un site, il est souvent nécessaire d’attribuer l’accès à certaines pages seulement si l’utilisateur est authentifié. L’authentification peut se faire via des tokens. Un token est un morceau de donnée qui n’a pas de signification propre, mais qui peut s’avérer utile pour la sécurisation du site, s’il est correctement utilisé, i.e. avec le système ad hoc. À chaque requête, le token est vérifié et seulement alors la réponse du server est transmise. Le token a une durée limitée dans le temps. À l’expiration, un nouveau token est transmis et utilisable.</p>
+<p>Le token est un substitut à l’utilisation de cookies et apporte divers avantages.</p>
+<ul class="simple">
+<li>Le token est contenu par le client et contient toutes les informations nécessaires à l’authentification. Cela permet de libérer le serveur de connaitre toutes les sessions en cours.</li>
+<li>Le token peut être généré de n’importe où, puisque la génération du token est distincte de sa vérification.</li>
+<li>Le token permet de gérer les types d’utilisateurs  et les permissions sur les ressources accessibles par l’utilisateur.</li>
+</ul>
+<p>Authentication grâce à un formulaire :</p>
+<p>C’est la méthode la plus connue pour s’authentifier sur un site web. Il suffit d’inscrire son identifiant et son mot de passe. Ceux-ci seront comparés à ceux d’une base de données afin de délivrer un droit d’accès à certains contenus. Les informations ne transitent pas par la barre d’adresse URL.</p>
+</div>
+<div class="section" id="cest-quoi-jwt">
+<h3>C’est quoi JWT?<a class="headerlink" href="#cest-quoi-jwt" title="Permalink to this headline">¶</a></h3>
+<p>JSON Web Token (JWT) est un système d’authentification à base de tokens. Les tokens sont suffisamment concis pour pouvoir être transmis via une requête POST.
+Le JSON Web Token est constitué de 3 parties : un Header, un Payload et une Signature.
+Les deux premières parties sont encodées en Base64. Le tout est signé. Le token est hashé par une méthode donnée dans le header. Le payload contient la donnée du token à proprement dite.
+Le token est signé, mais pas crypté. Ce qui signifie qu’une personne ayant accès au token serait en mesure d’en regarder le contenu du header et du payload. Mais sans la clé secrète utilisée pour façonner le token, celui-ci est inutilisable et l’accès aux ressources sera refusé pour cause de <em>Signature Invalide</em>.
+Si le server ne peut pas vérifier le token, celui-ci va renvoyer une erreur 401 : Unauthorized.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<ul class="last simple">
+<li>Conserver sa clé privée … privée !</li>
+<li>Ne pas mettre de données sensibles dans son token (parce que non crypté )</li>
+<li>Donner une durée à ses tokens. Cela permet de palier à certains problèmes qui pourraient arriver, comme par exemple un changement de clé privée.</li>
+<li>Utiliser le protocole HTTPS. Sinon, votre token pourra être compromis.</li>
+</ul>
+</div>
+<img alt="_images/cookies_token_final.jpg.jpg" class="align-center" src="_images/cookies_token_final.jpg.jpg" />
+</div>
+<div class="section" id="cest-quoi-passport">
+<h3>C’est quoi Passport?<a class="headerlink" href="#cest-quoi-passport" title="Permalink to this headline">¶</a></h3>
+<p>Passport est un système mettant en place un formulaire d’authentification. Il permet également de gérer les sessions. Il utilise une Base de Données Redis.
+On s’identifie par son identifiant et son mot de passe.
+Il permet aussi de s’authentifier par Facebook, Twitter, Google etc…</p>
+<p>Attention toutefois aux formulaires d’authentification. Si le site n’est pas sécurisé, la base de données peut être écrite en claire ! Cela signifie que le serveur va comparer l’identifiant et le mot de passe qu’a envoyé l’utilisateur avec celui de sa base de données…</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>Imaginez deux secondes …</p>
+<ol class="last arabic simple">
+<li><dl class="first docutils">
+<dt>Le site est en HTTP et utilise le protocole TCP.</dt>
+<dd>Un étranger pourrait espionner le réseau et voir le mot de passe que vous venez d’envoyer.</dd>
+</dl>
+</li>
+<li>Un étranger s’est introduit dans le serveur et a alors accès à tous les mots de passe des utilisateurs!</li>
+</ol>
+</div>
+<p>Pour pallier à cela, il faut utiliser une fonction de hashage. Le serveur ne doit conserver que les hashes des mots de passe. Lorsque l’utilisateur entre son mot de passe, le hash de ce mot de passe doit alors être calculé et c’est celui-ci qui doit être envoyé au serveur et comparé avec le hash de la BDD.</p>
+</div>
+</div>
+<div class="section" id="tp">
+<h2>TP<a class="headerlink" href="#tp" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="installation-prealable-a-partir-de-rien">
+<h3>Installation préalable (à partir de rien)<a class="headerlink" href="#installation-prealable-a-partir-de-rien" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>Logiciels nécessaires</li>
+</ul>
+<p><em>Presentation pour une utilisation en local.</em></p>
+<p>Pour pouvoir lancer tout cela, il va falloir commencer par installer node. Ensuite, il faut installer le package Express. Enfin, pour faire tourner JWT, il faut installer le package jsonwebtoken. Il faut également installer le package Passport.</p>
+<ul class="simple">
+<li>Comment faire? (Dépendances, …)</li>
+</ul>
+<p>Lorsque tout est installé, vous avez node, prêt à être utilisé.
+Alors, placez-vous dans un dossier (ici, nous utiliserons le dossier <em>./node</em>) et nous allons créer une nouvelle application.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>npm init
+</pre></div>
+</div>
+<p>Là, nous pouvons compléter les informations relatives à notre projet:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>Watson@Lenovo-PC:~/node$ npm init
+name: <span class="o">(</span>node<span class="o">)</span> <span class="m">1</span>-Projet
+version: <span class="o">(</span><span class="m">0</span>.0.0<span class="o">)</span>
+description: A project <span class="k">for</span> testing, <span class="k">for</span> the fun
+entry point: <span class="o">(</span>index.js<span class="o">)</span> <span class="m">1</span>-Projet.js
+<span class="nb">test</span> command:
+git repository:
+keywords:
+author:
+license: <span class="o">(</span>BSD-2-Clause<span class="o">)</span> WTFPL
+About to write to ./node/package.json:
+<span class="o">{</span>
+...
+<span class="o">}</span>
+Is this ok? <span class="o">(</span>yes<span class="o">)</span>
+</pre></div>
+</div>
+<p>Là, le fichier package.json est créé.
+On peut alors rajouter les dépendances nécessaires.
+Si vous avez copié l’ensemble des documents, vous avez le fichier <em>package.json</em>. Il permet de récupérer les dépendances.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>npm install
+</pre></div>
+</div>
+<p>Nous avons préparé le terrain pour le programme.
+Il faut à présent le créer : les codes sources sont dans le fichier compressé (Pour le programme 1-Projet.js, un exemple se trouve en annexe).</p>
+<p>Code-source:</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="1-Projet.html">1-Projet.js</a></li>
+</ul>
+</div>
+<p>Par exemple, sur un serveur distant, il est possible d’utiliser nano:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>nano <span class="m">1</span>-Projet.js
+</pre></div>
+</div>
+<p>Puis coller le code dans 1-Projet.js.
+Le projet est prêt à être lancé!</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p>Il faut modifier quelques élements en fonction de votre site!</p>
+<img alt="_images/hardcode.jpg" src="_images/hardcode.jpg" />
+<p>Remplacez l’adresse du site par l’adresse de votre site.</p>
+<p>Ensuite, remplacez le port par votre port par défaut.</p>
+<img alt="_images/port.jpg" class="last" src="_images/port.jpg" />
+</div>
+<ul class="simple">
+<li>Exécution du service</li>
+</ul>
+<p>Pour faire nos tests en local, nous pouvons lancer dans une console :</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>node <span class="m">1</span>-Projet.js
+</pre></div>
+</div>
+<p>Maintenant, dans un navigateur, saisissons pour un usage local:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>localhost:10404
+</pre></div>
+</div>
+<p>Résultat :</p>
+<img alt="_images/helloworld.jpg" class="align-center" src="_images/helloworld.jpg" />
+<p>Nous pouvons maintenant tester en local notre application.</p>
+<p>Pour un usage en production, il suffit de faire la même chose sur le serveur OVH:
+Nous relançons les commandes de la partie de présentation sur le Terminal (les fichiers seront créés dans le dossier ~/node). Puis, lorsque l’application est lancée, l’accès se fera à l’adresse:
+<a class="reference external" href="http://node.aneth.ovh1.ec-m.fr">http://node.aneth.ovh1.ec-m.fr</a></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Entrez l’adresse du site en fonction du votre !</p>
+</div>
+</div>
+<div class="section" id="utilisation">
+<h3>Utilisation<a class="headerlink" href="#utilisation" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>Script 1 : génération et utilisation d’un token (JSON Web Token)</li>
+</ul>
+<p>Code-source:</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="1-Projet.html">1-Projet.js</a></li>
+</ul>
+</div>
+<p>Au terme de cette partie sur JWT, nous obtenons l’architecture suivante (avec les fichiers contenant les images) :</p>
+<img alt="_images/archi.jpg" class="align-center" src="_images/archi.jpg" />
+<p>Pour utiliser ce script, il faut l’avoir lancé.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>node <span class="m">1</span>-Projet.js
+</pre></div>
+</div>
+<p>Ensuite, rendez-vous sur le site <em>/secret</em></p>
+<div class="admonition tip">
+<p class="first admonition-title">Tip</p>
+<p class="last"><em>http://node.aneth.ovh1.ec-m.fr/secret</em></p>
+</div>
+<p>Vous observez alors que vous n’avez pas accès à la page ! Il vous faut un token !
+Rendez-vous sur le site <em>/getToken</em></p>
+<div class="admonition tip">
+<p class="first admonition-title">Tip</p>
+<p class="last"><em>http://node.aneth.ovh1.ec-m.fr/getToken</em></p>
+</div>
+<p>Là, vous pouvez copier votre token.</p>
+<p>Rendez-vous ensuite sur votre site /secret?token= <em>votre token</em> en cliquant sur <em>My biggest secrets</em></p>
+<div class="admonition tip">
+<p class="first admonition-title">Tip</p>
+<p class="last"><a class="reference external" href="http://node.aneth.ovh1.ec-m.fr">http://node.aneth.ovh1.ec-m.fr</a>
+/secret?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
+.eyJ1c2VybmFtZSI6ImFkbyIsImlhdCI6MTUxOTIwODI5NCwiZXhwIjoxNTE5MjA4NDE0fQ
+.GPrh6Cu9HUY6wA4N8ntfU7S6I9EvFzWL_wxU0n8eFaE</p>
+</div>
+<ul class="simple">
+<li>Script 2 : Connexion via un formulaire avec Passport</li>
+</ul>
+<p>Une fois les fichiers copiés, vous obtenez finalement l’architecture ci-contre :</p>
+<img alt="_images/archi_finale.jpg" src="_images/archi_finale.jpg" />
+<p>Pour utiliser ce script, il faut l’avoir lancé.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>node <span class="m">1</span>-Projet.js
+</pre></div>
+</div>
+<p>Rendez-vous sur l’onglet Passport -&gt; Passport : Login</p>
+<img alt="_images/login.jpg" class="align-center" src="_images/login.jpg" />
+<p>Rentrez un nom d’utilisateur et un mot de passe aléatoires. Vous retombez sur la page des logins, parce que le compte n’existe pas.
+Si vous essayez d’aller sur <em>My-profile</em>, vous retombez sur la page des logins.</p>
+<p>Maintenant regardons les comptes dans la Base de Données :</p>
+<img alt="_images/users_js.jpg" class="align-center" src="_images/users_js.jpg" />
+<p>Maintenant, essayez de vous connecter avec le compte de Jack  (jack | secret ).
+Vous arrivez sur la Homepage, vous êtes connecté !
+Dirigez-vous vers <em>My-profile</em> , vous avez accès à son compte !</p>
+<img alt="_images/jack.jpg" class="align-center" src="_images/jack.jpg" />
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Félicitations ! Vous venez de terminer ce tuto avec brio (ou tout seul) !</p>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">L’authentification sur un site Oueb</a><ul>
+<li><a class="reference internal" href="#explications-prealables">Explications préalables</a><ul>
+<li><a class="reference internal" href="#pourquoi-faire-ca">Pourquoi faire ça?</a></li>
+<li><a class="reference internal" href="#cest-quoi-jwt">C’est quoi JWT?</a></li>
+<li><a class="reference internal" href="#cest-quoi-passport">C’est quoi Passport?</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#tp">TP</a><ul>
+<li><a class="reference internal" href="#installation-prealable-a-partir-de-rien">Installation préalable (à partir de rien)</a></li>
+<li><a class="reference internal" href="#utilisation">Utilisation</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">Welcome to DocAuth’s documentation!</a></li>
+      <li>Next: <a href="1-Projet.html" title="next chapter">1-Projet.js</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/tuto_auth.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Mathieu Schiano, Bob.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/tuto_auth.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

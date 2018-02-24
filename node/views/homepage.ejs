@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="fr">
+<meta charset="UTF-8" />
+<head>
+<title>Home</title>
+<link rel="stylesheet" href="main.css" />
+</head>
+
+<body>
+<% include partials/navbar.ejs %> <!-- For the toolbar -->
+<h1>Homepage</h1>
+<h2>Hello World!</h2>
+Welcome to the <abbr title="The best pun ever...">OM-page</abbr>! <br />
+
+This presentation shows you the ways to authenticate, by using two different technologies.  
+Feel free to test the pages above: <br />
+<ul>
+	<li>Secret: a demonstration of JWT</li>
+	<li>Passport: a demonstration using Passport</li>
+</ul>
+
+The differences between the two technologies will be given on live, just for you. 
+<hr />
+<h2>Information about log in with Passport</h2>
+<p>
+<% if (!user) { %>
+	<p>Passport : The user is <a style="color:red; font-size: 110%;font-style: bold;">not</a> logged in... <a href="/login">Log in</a>.</p>
+<% } else { %>
+	<h5>Hello <a style="color:blue; font-size: 110%;font-style: italic;"><%= user.username %></a>. You can access to your profile <a href="/profile">here</a>.</p>
+<% } %>
+</body>
+
+<hr />
+<h2>About the website</h2>
+<p>Website made with love in France by <strong>SASSI Wissam</strong> and <strong>SCHIANO Mathieu</strong>.
+<br />
+<hr />
+<h2>Acknowledgments</h2>
+<div style="color:black; font-size: 100%;">Thank you to the Internet who gave us so many tips to achieve that!</div>
+<ul>
+<li><a href="https://auth0.com/learn/token-based-authentication-made-easy/">For JWT</a></li>
+<li><a href="https://github.com/passport/">For Passport</a></li>
+<li><a href="https://thebestmotherfucking.website/">For the CSS file</a></li>
+<li>And thank you to the teachers, of course!</li>
+</ul>
